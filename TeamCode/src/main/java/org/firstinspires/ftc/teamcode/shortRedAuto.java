@@ -30,7 +30,7 @@ import java.nio.file.WatchEvent;
 
 @Config
 @Autonomous
-public class AshortBlueAuto extends OpMode {
+public class shortRedAuto extends OpMode {
 
     private PIDController controller;
 
@@ -152,7 +152,7 @@ public class AshortBlueAuto extends OpMode {
         });
 
         class adiPipeline extends OpenCvPipeline {
-            Mat HSV = new Mat();
+            Mat YCbCr = new Mat();
             Mat leftCrop;
             Mat rightCrop;
             Mat middleCrop;
@@ -160,11 +160,11 @@ public class AshortBlueAuto extends OpMode {
             double rightavgfin;
             double middleavgfin;
             Mat outPut = new Mat();
-            Scalar rectColor = new Scalar(192, 100, 100);
+            Scalar rectColor = new Scalar(0, 0, 0);
 
             public Mat processFrame(Mat input) {
 
-                Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
+                Imgproc.cvtColor(input, YCbCr, Imgproc.COLOR_RGB2YCrCb);
                 telemetry.addLine("pipeline running");
 
                 Rect leftRect = new Rect(0, 0, 200, 470);
@@ -177,9 +177,9 @@ public class AshortBlueAuto extends OpMode {
                 Imgproc.rectangle(outPut, rightRect, rectColor, 2);
                 Imgproc.rectangle(outPut, middleRect, rectColor, 2);
 
-                leftCrop = HSV.submat(leftRect);
-                rightCrop = HSV.submat(rightRect);
-                middleCrop = HSV.submat(middleRect);
+                leftCrop = YCbCr.submat(leftRect);
+                rightCrop = YCbCr.submat(rightRect);
+                middleCrop = YCbCr.submat(middleRect);
 
                 Core.extractChannel(leftCrop, leftCrop, 2);
                 Core.extractChannel(rightCrop, rightCrop, 2);
@@ -196,6 +196,7 @@ public class AshortBlueAuto extends OpMode {
                 if (leftavgfin > rightavgfin && leftavgfin > middleavgfin) {
                     telemetry.addLine("Left");
                     position = "left";
+                    openCVbool = false;
                     webcam1.stopStreaming();
 
                 }
@@ -226,8 +227,8 @@ public class AshortBlueAuto extends OpMode {
 
     }
 
-    @Override
-    public void loop() {
+
+    public void loop(){
         controller.setPID(p, i, d);
         int armPos = arm_motor.getCurrentPosition();
         double pid = controller.calculate(armPos, target);
@@ -235,80 +236,112 @@ public class AshortBlueAuto extends OpMode {
 
         double power = pid + ff;
 
-        /*if (position.equals("left")) {
 
+        /*if(position.equals("left")){
             position = "done";
+            telemetry.addLine("starting");
 
-            telemetry.addLine("running");
-
-
-            resetEncoder();
-
-
-            flm.setTargetPosition(-2700);
-            frm.setTargetPosition(2700);
-            blm.setTargetPosition(2700);
-            brm.setTargetPosition(-2700);
+            flm.setTargetPosition(1500);
+            frm.setTargetPosition(-1500);
+            blm.setTargetPosition(-1500);
+            brm.setTargetPosition(1500);
             runtoPos();
 
-            while(flm.isBusy()) {
-                flm.setPower(0.3);
+            while(flm.isBusy()){
+                flm.setPower(0.25);
                 frm.setPower(0.25);
+                blm.setPower(0.25);
                 brm.setPower(0.25);
-                blm.setPower(0.3);
             }
 
-            flm.setPower(0);
-            frm.setPower(0);
-            blm.setPower(0);
-            brm.setPower(0);
+            motorsStop();
+            resetEncoder();
 
             cs1.setPosition(0.5);
 
-            arm_motor.setTargetPosition(350);
-            arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm_motor.setPower(0.8);
+            flm.setTargetPosition(-1000);
+            frm.setTargetPosition(1000);
+            blm.setTargetPosition(-1000);
+            brm.setTargetPosition(1000);
+            runtoPos();
 
+            while(blm.isBusy()){
+                flm.setPower(0.25);
+                frm.setPower(0.25);
+                blm.setPower(0.25);
+                brm.setPower(0.25);
+            }
+
+            motorsStop();
             resetEncoder();
 
+            arm_motor.setTargetPosition(400);
+            arm_motor.setPower(0.25);
 
-            flm.setTargetPosition(2350);
-            frm.setTargetPosition(2350);
-            blm.setTargetPosition(2350);
-            brm.setTargetPosition(2350);
+            flm.setTargetPosition(2000);
+            frm.setTargetPosition(2000);
+            blm.setTargetPosition(2000);
+            brm.setTargetPosition(2000);
+            runtoPos();
+
+            while(brm.isBusy()){
+                flm.setPower(0.25);
+                frm.setPower(0.25);
+                blm.setPower(0.25);
+                brm.setPower(0.25);
+            }
+
+            motorsStop();
+            resetEncoder();
+
+            cs2.setPosition(0.7);
+
+            motorsStop();
+
+            telemetry.addLine("radical");
+
+
+
+
+        }
+
+        if(position.equals("middle")){
+            position="done";
+            telemetry.addLine("starting");
+
+            flm.setTargetPosition(-500);
+            frm.setTargetPosition(500);
+            blm.setTargetPosition(-500);
+            brm.setTargetPosition(500);
+            runtoPos();
+
+            while(flm.isBusy()){
+                flm.setPower(0.25);
+                frm.setPower(0.25);
+                blm.setPower(0.25);
+                brm.setPower(0.25);
+            }
+
+            motorsStop();
+            resetEncoder();
+
+            flm.setTargetPosition(1000);
+            frm.setTargetPosition(1000);
+            blm.setTargetPosition(1000);
+            brm.setTargetPosition(1000);
             runtoPos();
 
             while(frm.isBusy()){
                 flm.setPower(0.25);
                 frm.setPower(0.25);
-                brm.setPower(0.25);
                 blm.setPower(0.25);
+                brm.setPower(0.25);
             }
 
-            flm.setPower(0);
-            frm.setPower(0);
-            blm.setPower(0);
-            brm.setPower(0);
-
+            motorsStop();
             resetEncoder();
 
-
-            cs2.setPosition(0.6);
-
-
-
-
-
-            telemetry.addLine("finished");
-            telemetry.addData("flmPos", flm.getCurrentPosition());
-
-            return;
-        }
-
-        if(position.equals("middle")){
-            position = "done";
-
-            telemetry.addLine("running");
+            cs1.setPosition(0.5);
 
             flm.setTargetPosition(-1000);
             frm.setTargetPosition(1000);
@@ -319,25 +352,88 @@ public class AshortBlueAuto extends OpMode {
             while(flm.isBusy()){
                 flm.setPower(0.25);
                 frm.setPower(0.25);
-                brm.setPower(0.25);
                 blm.setPower(0.25);
+                brm.setPower(0.25);
             }
 
             motorsStop();
-
             resetEncoder();
 
-            flm.setTargetPosition(1500);
-            frm.setTargetPosition(1500);
-            blm.setTargetPosition(1500);
-            brm.setTargetPosition(1500);
+            arm_motor.setTargetPosition(300);
+            arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm_motor.setPower(0.25);
+
+            flm.setTargetPosition(2000);
+            frm.setTargetPosition(2000);
+            blm.setTargetPosition(2000);
+            brm.setTargetPosition(2000);
             runtoPos();
 
-            while(flm.isBusy()) {
+            while(flm.isBusy()){
                 flm.setPower(0.25);
                 frm.setPower(0.25);
-                brm.setPower(0.25);
                 blm.setPower(0.25);
+                brm.setPower(0.25);
+            }
+
+            motorsStop();
+            resetEncoder();
+
+            cs2.setPosition(0.5);
+
+
+
+        }
+
+        if(position.equals("right")){
+            position = "done";
+
+            telemetry.addLine("Running");
+
+            flm.setTargetPosition(500);
+            frm.setTargetPosition(-500);
+            blm.setTargetPosition(-500);
+            brm.setTargetPosition(500);
+            runtoPos();
+
+            while(flm.isBusy()){
+                flm.setPower(0.25);
+                frm.setPower(0.25);
+                blm.setPower(0.25);
+                brm.setPower(0.25);
+            }
+
+            motorsStop();
+            resetEncoder();
+
+
+            flm.setTargetPosition(-500);
+            frm.setTargetPosition(500);
+            blm.setTargetPosition(-500);
+            brm.setTargetPosition(500);
+            runtoPos();
+
+            while(frm.isBusy()){
+                flm.setPower(0.25);
+                frm.setPower(0.25);
+                blm.setPower(0.25);
+                brm.setPower(0.25);
+            }
+
+            motorsStop();
+            resetEncoder();
+
+            flm.setTargetPosition(1000);
+            frm.setTargetPosition(1000);
+            blm.setTargetPosition(1000);
+            brm.setTargetPosition(1000);
+            runtoPos();
+
+            while(blm.isBusy()){
+                flm.setPower(0.25);
+                frm.setPower(0.25);
+                blm.setPower(0.25);
+                brm.setPower(0.25);
             }
 
             motorsStop();
@@ -345,15 +441,10 @@ public class AshortBlueAuto extends OpMode {
 
             cs1.setPosition(0.5);
 
-            arm_motor.setTargetPosition(400);
-            arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm_motor.setPower(0.2);
-
-
-            flm.setTargetPosition(1000);
-            frm.setTargetPosition(-1000);
-            blm.setTargetPosition(1000);
-            brm.setTargetPosition(-1000);
+            flm.setTargetPosition(-300);
+            frm.setTargetPosition(-300);
+            blm.setTargetPosition(-300);
+            brm.setTargetPosition(-300);
             runtoPos();
 
             while(blm.isBusy()){
@@ -364,84 +455,16 @@ public class AshortBlueAuto extends OpMode {
             }
 
             motorsStop();
-            resetEncoder();
-
-            flm.setTargetPosition(2200);
-            frm.setTargetPosition(2200);
-            blm.setTargetPosition(2200);
-            brm.setTargetPosition(2200);
-            runtoPos();
-
-            while(blm.isBusy()){
-                flm.setPower(0.25);
-                frm.setPower(0.25);
-                blm.setPower(0.25);
-                brm.setPower(0.25);
-            }
-
-            motorsStop();
-            resetEncoder();
-
-
-            cs2.setPosition(0.6);
-
-            telemetry.addLine("Finished");
-
-
-
-        }
-
-        if(position.equals("Right")){
-            position = "done";
-
-            telemetry.addLine("running");
-
-            flm.setTargetPosition(-500);
-            frm.setTargetPosition(-500);
-            blm.setTargetPosition(-500);
-            brm.setTargetPosition(-500);
-            runtoPos();
-
-            while(flm.isBusy()){
-                flm.setPower(0.25);
-                frm.setPower(0.25);
-                blm.setPower(0.25);
-                brm.setPower(0.25);
-            }
-
-            motorsStop();
-            resetEncoder();
-
-            flm.setTargetPosition(1500);
-            frm.setTargetPosition(-1500);
-            blm.setTargetPosition(-1500);
-            brm.setTargetPosition(1500);
-            runtoPos();
-
-            while(flm.isBusy()) {
-                flm.setPower(0.25);
-                frm.setPower(0.25);
-                brm.setPower(0.25);
-                blm.setPower(0.25);
-            }
-
-            motorsStop();
-
-            cs2.setPosition(0.5);
-
-            arm_motor.setTargetPosition(400);
-            arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm_motor.setPower(0.3);
-
             resetEncoder();
 
             flm.setTargetPosition(-500);
             frm.setTargetPosition(500);
-            blm.setTargetPosition(500);
-            brm.setTargetPosition(-500);
+            blm.setTargetPosition(-500);
+            brm.setTargetPosition(500);
             runtoPos();
 
-            while(flm.isBusy()){
+
+            while(brm.isBusy()){
                 flm.setPower(0.25);
                 frm.setPower(0.25);
                 blm.setPower(0.25);
@@ -451,23 +474,26 @@ public class AshortBlueAuto extends OpMode {
             motorsStop();
             resetEncoder();
 
-            flm.setTargetPosition(2500);
-            frm.setTargetPosition(2500);
-            blm.setTargetPosition(2500);
-            brm.setTargetPosition(2500);
+            arm_motor.setTargetPosition(300);
+            arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm_motor.setPower(0.4);
+
+
+            flm.setTargetPosition(2000);
+            frm.setTargetPosition(2000);
+            blm.setTargetPosition(2000);
+            brm.setTargetPosition(2000);
             runtoPos();
 
-            while(flm.isBusy()){
+            while(blm.isBusy()){
                 flm.setPower(0.25);
                 frm.setPower(0.25);
                 blm.setPower(0.25);
                 brm.setPower(0.25);
             }
 
-            motorsStop();
-            cs1.setPosition(0.6);
 
-
+            cs2.setPosition(0.5);
 
 
         }*/
@@ -489,10 +515,10 @@ public class AshortBlueAuto extends OpMode {
         motorsStop();
         resetEncoder();
 
-        flm.setTargetPosition(500);
-        frm.setTargetPosition(-500);
-        blm.setTargetPosition(500);
-        brm.setTargetPosition(-500);
+        flm.setTargetPosition(-500);
+        frm.setTargetPosition(500);
+        blm.setTargetPosition(-500);
+        brm.setTargetPosition(500);
         runtoPos();
 
         while(blm.isBusy()){
@@ -523,10 +549,6 @@ public class AshortBlueAuto extends OpMode {
         resetEncoder();
         cs1.setPosition(0);
         cs2.setPosition(0);
-
-
-
-
 
 
 

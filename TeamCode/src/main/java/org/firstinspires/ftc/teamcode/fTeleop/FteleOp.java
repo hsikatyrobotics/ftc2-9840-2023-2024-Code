@@ -45,19 +45,21 @@ public class FteleOp extends LinearOpMode {
         DcMotor backLeftMotor = hardwareMap.dcMotor.get("backLeftMotor");
         DcMotor frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         DcMotor backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
-        DcMotor Lhang = hardwareMap.dcMotor.get("leftHang");
-        DcMotor Rhang = hardwareMap.dcMotor.get("rightHang");
-
-        DcMotor arm_motor = hardwareMap.dcMotor.get("clawArmMotor");
-
-        Lhang.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Servo clawServo = hardwareMap.servo.get("clawServo");
-        Servo clawServo2 = hardwareMap.servo.get("clawServo2");
-        Servo planeServo = hardwareMap.servo.get("planeServo");
 
 
-        Lhang.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Lhang.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        DcMotor intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
+
+        DcMotor leftSlide = hardwareMap.dcMotor.get("leftSlide");
+        DcMotor rightSlide = hardwareMap.dcMotor.get("rightSlide");
+
+        boolean latch = false;
+
+
+
+
+
+
 
 
 
@@ -67,16 +69,7 @@ public class FteleOp extends LinearOpMode {
         // See the note about this earlier on this page.
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        myVisionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"))
-                .setCameraResolution(new Size(640, 480))
-                .setStreamFormat(VisionPortal.StreamFormat.YUY2)
-                .enableLiveView(true)
-                .setAutoStopLiveView(true)
-                .build();
 
 
         waitForStart();
@@ -84,8 +77,8 @@ public class FteleOp extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x * 1.2; // Counteract imperfect strafing
+            double y = -gamepad1.left_stick_y * 0.85; // Remember, Y stick value is reversed
+            double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
 
             // Denominator is the largest motor power (absolute value) or 1
@@ -106,94 +99,31 @@ public class FteleOp extends LinearOpMode {
 
 
 
+        if(-gamepad2.left_stick_y>0){
+            leftSlide.setPower(0.5);
+            rightSlide.setPower(-0.5);
+        }
+
+        if(gamepad2.b && latch==false){
+            intakeMotor.setPower(0.5);
+            latch=true;
+        }
+
+        if(gamepad2.b && latch==true){
+            intakeMotor.setPower(0);
+            latch=false;
+        }
+
+        if(gamepad2.a && latch_variable_1==false){
+            intakeMotor.setPower(-0.5);
+            latch_variable_1=true;
+        }
+
+        if(gamepad2.a && latch_variable_1==true){
+            intakeMotor.setPower(0);
+        }
 
 
-
-
-            if(gamepad2.a){
-                arm_motor.setTargetPosition(95);
-                arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                arm_motor.setPower(0.5);
-
-            }
-
-
-            if(gamepad2.b){
-                arm_motor.setTargetPosition(80);
-                arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                arm_motor.setPower(0.5);
-            }
-
-            if(gamepad2.x){
-                arm_motor.setTargetPosition(66);
-                arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                arm_motor.setPower(0.5);
-            }
-
-            if(gamepad2.y){
-                arm_motor.setTargetPosition(55);
-                arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                arm_motor.setPower(0.5);
-            }
-
-
-
-            if(gamepad2.right_trigger>0){
-                clawServo.setPosition(0.85);
-            }
-
-
-
-            if(gamepad2.left_trigger>0){
-                clawServo2.setPosition(0);
-            }
-
-            if(gamepad2.right_bumper){
-                clawServo.setPosition(0.6);
-            }
-
-            if(gamepad2.left_bumper){
-                clawServo2.setPosition(0.9);
-            }
-
-            if(gamepad2.dpad_right){
-                planeServo.setPosition(1.5);
-            }
-
-
-
-
-
-            if(-gamepad2.left_stick_y>0){
-                arm_motor.setPower(0.4);
-            }else{
-                arm_motor.setPower(0.15);
-            }
-
-            if(-gamepad2.left_stick_y<0) {
-                arm_motor.setPower(-0.15);
-            }
-
-
-
-            if(gamepad2.dpad_up){
-                Lhang.setTargetPosition(30000);
-                Lhang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Lhang.setPower(1);
-                Rhang.setTargetPosition(30000);
-                Rhang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Rhang.setPower(1);
-
-            }
-
-            if(gamepad2.dpad_down){
-                Lhang.setTargetPosition(0);
-                Lhang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Lhang.setPower(1);
-                Rhang.setTargetPosition(0);
-                Rhang.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Rhang.setPower(1);
-            }
 
         }
     }

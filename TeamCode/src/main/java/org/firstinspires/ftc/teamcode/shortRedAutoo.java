@@ -74,13 +74,15 @@ public class shortRedAutoo extends OpMode {
 
     String position = "";
 
-    DcMotorEx flm;
-    DcMotorEx blm;
-    DcMotorEx frm;
-    DcMotorEx brm;
+    DcMotor flm = hardwareMap.dcMotor.get("frontLeftMotor");
+    DcMotor blm = hardwareMap.dcMotor.get("backLeftMotor");
+    DcMotor frm = hardwareMap.dcMotor.get("frontRightMotor");
+    DcMotor brm = hardwareMap.dcMotor.get("backRightMotor");
 
-    Servo cs1;
-    Servo cs2;
+
+
+    DcMotor intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
+
 
     int flp = 0;
     int frp = 0;
@@ -125,11 +127,17 @@ public class shortRedAutoo extends OpMode {
     OpenCvWebcam webcam1 = null;
 
 
+
+
     @Override
     public void init() {
+        flm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        blm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        brm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
-
+        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
         controller = new PIDController(p, i, d);
@@ -143,8 +151,6 @@ public class shortRedAutoo extends OpMode {
         blm = hardwareMap.get(DcMotorEx.class, "backLeftMotor");
         frm = hardwareMap.get(DcMotorEx.class, "frontRightMotor");
         brm = hardwareMap.get(DcMotorEx.class, "backRightMotor");
-        cs1 = hardwareMap.get(Servo.class, "clawServo");
-        cs2 = hardwareMap.get(Servo.class,"clawServo2");
         arm_motor = hardwareMap.get(DcMotorEx.class, "clawArmMotor");
 
 
@@ -248,10 +254,9 @@ public class shortRedAutoo extends OpMode {
 
         webcam1.setPipeline(new adiPipeline());
 
-        cs1.setPosition(0.95);
-        cs2.setPosition(0.2);
 
         telemetry.addData("flmPos", flm.getCurrentPosition());
+
 
 
     }
@@ -259,12 +264,14 @@ public class shortRedAutoo extends OpMode {
     @Override
     public void loop() {
 
+
         controller.setPID(p, i, d);
         int armPos = arm_motor.getCurrentPosition();
         double pid = controller.calculate(armPos, target);
         double ff = Math.cos(Math.toRadians(target / ticks_in_degree)) * f;
 
         double power = pid + ff;
+
 
         if(position.equals("right")){
             TrajectorySequence right1 = drive.trajectorySequenceBuilder(new Pose2d(10, -58, Math.toRadians(90)))
@@ -325,6 +332,7 @@ public class shortRedAutoo extends OpMode {
 
             //deposit purple pixel
 
+
             TrajectorySequence left2 =  drive.trajectorySequenceBuilder(new Pose2d(10, -34, Math.toRadians(180)))
                     .back(37)
                     .build();
@@ -335,6 +343,8 @@ public class shortRedAutoo extends OpMode {
 
 
         }
+
+
 
 
 

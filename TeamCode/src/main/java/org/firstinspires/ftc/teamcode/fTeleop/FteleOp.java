@@ -26,14 +26,16 @@ public class FteleOp extends LinearOpMode {
     private PIDController controller;
 
 
-
-    private VisionPortal myVisionPortal;
-
     public int z = 0;
 
 
-    boolean latch_variable_1 = false;
+    boolean var = true;
 
+    boolean var2 = true;
+
+    boolean othervar = true;
+
+    boolean othervar2 = true;
 
 
 
@@ -45,16 +47,30 @@ public class FteleOp extends LinearOpMode {
         DcMotor backLeftMotor = hardwareMap.dcMotor.get("backLeftMotor");
         DcMotor frontRightMotor = hardwareMap.dcMotor.get("frontRightMotor");
         DcMotor backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
+        DcMotor rs = hardwareMap.dcMotor.get("rightSlide");
+        DcMotor ls = hardwareMap.dcMotor.get("leftSlide");
+        DcMotor claw = hardwareMap.dcMotor.get("clawArmMotor");
+
+
+        Servo cs1 = hardwareMap.servo.get("cs1");
+        Servo cs2 = hardwareMap.servo.get("cs2");
+        Servo plane = hardwareMap.servo.get("planeServo");
+        /*Servo rSleeve = hardwareMap.servo.get("rightsleeve");
+        Servo lSleeve = hardwareMap.servo.get("leftSleeve");
+        Servo outtake = hardwareMap.servo.get("outtakeServo");
 
 
 
-        DcMotor intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
+        DcMotor intakeMotor = hardwareMap.dcMotor.get("intake");
+        DcMotor intake2 = hardwareMap.dcMotor.get("intake2");
 
         DcMotor leftSlide = hardwareMap.dcMotor.get("leftSlide");
         DcMotor rightSlide = hardwareMap.dcMotor.get("rightSlide");
 
         boolean latch = false;
 
+        boolean modes = false;
+        */
 
 
 
@@ -67,9 +83,8 @@ public class FteleOp extends LinearOpMode {
         // If your robot moves backwards when commanded to go forwards,
         // reverse the left side instead.
         // See the note about this earlier on this page.
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         waitForStart();
@@ -77,8 +92,8 @@ public class FteleOp extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            double y = -gamepad1.left_stick_y * 0.85; // Remember, Y stick value is reversed
-            double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            double y = -gamepad1.left_stick_y * 0.8; // Remember, Y stick value is reversed
+            double x = gamepad1.left_stick_x * 1.2; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
 
             // Denominator is the largest motor power (absolute value) or 1
@@ -96,34 +111,72 @@ public class FteleOp extends LinearOpMode {
             backRightMotor.setPower(backRightPower);
 
 
-
-
-
         if(-gamepad2.left_stick_y>0){
-            leftSlide.setPower(0.5);
-            rightSlide.setPower(-0.5);
+            claw.setPower(-0.5);
         }
 
-        if(gamepad2.b && latch==false){
-            intakeMotor.setPower(0.5);
-            latch=true;
-        }
-
-        if(gamepad2.b && latch==true){
-            intakeMotor.setPower(0);
-            latch=false;
-        }
-
-        if(gamepad2.a && latch_variable_1==false){
-            intakeMotor.setPower(-0.5);
-            latch_variable_1=true;
-        }
-
-        if(gamepad2.a && latch_variable_1==true){
-            intakeMotor.setPower(0);
+        if(-gamepad2.left_stick_y==0){
+            claw.setPower(-0.15);
         }
 
 
+        if(-gamepad2.left_stick_y<0){
+            claw.setPower(0.2);
+        }
+        if(gamepad2.right_trigger>0 && var==true && var2==true){
+            cs2.setPosition(0.8);
+            var=false;
+            var2=false;
+        }
+
+
+        if(gamepad2.right_trigger>0 && var==true && var2==false){
+            cs2.setPosition(0.5);
+            var=false;
+            var2=true;
+        }
+
+        if(gamepad2.right_trigger==0){
+            var=true;
+        }
+
+
+        if(gamepad2.left_trigger>0 && othervar==true && othervar2==true){
+            cs1.setPosition(0);
+            othervar=false;
+            othervar2=false;
+        }
+
+
+        if(gamepad2.left_trigger>0 && othervar==true && othervar2==false){
+            cs1.setPosition(0.8);
+            othervar=false;
+            othervar2=true;
+        }
+
+        if(gamepad2.left_trigger==0){
+            othervar=true;
+        }
+
+
+        if(gamepad2.dpad_up){
+            plane.setPosition(1 );
+        }
+
+        if(-gamepad2.right_stick_y>0){
+            rs.setPower(0.4);
+            ls.setPower(-0.4);
+        }
+
+        if(gamepad2.right_stick_y==0){
+            rs.setPower(0);
+            ls.setPower(0);
+        }
+
+        if(-gamepad2.right_stick_y<0){
+            rs.setPower(-0.4);
+            ls.setPower(0.4);
+        }
 
         }
     }

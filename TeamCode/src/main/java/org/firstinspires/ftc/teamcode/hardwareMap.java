@@ -25,7 +25,6 @@ public class hardwareMap {
     }
 
 
-
     private void initialize(HardwareMap hwMap){
         hardwareMap = hwMap;
 
